@@ -49,8 +49,10 @@ func GetAbout() string {
 func CheckUserCookie(cookies []*http.Cookie) (bool, error) {
 	client := GetClient()
 	response, err := client.R().SetCookies(cookies...).Get("https://pc-proxy-api.xuexi.cn/delegate/score/get")
-	if err != nil {
-		log.Errorln("获取用户总分错误" + err.Error())
+	if err != nil || response == nil {
+		// A network / TLS / certificate error is NOT an expired account.
+		// Treat it as "cannot decide" so a proxy hiccup never disables users.
+		log.Warningln("获取用户总分失败，跳过本次有效性判定: ", err)
 		return true, err
 	}
 	log.Infoln(gjson.GetBytes(response.Bytes(), "@this|@pretty"))

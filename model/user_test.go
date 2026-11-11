@@ -1,10 +1,32 @@
 package model
 
 import (
+	"net/http"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
 )
+
+func TestTokenFromCookies(t *testing.T) {
+	tests := []struct {
+		name    string
+		cookies []*http.Cookie
+		want    string
+	}{
+		{"empty", nil, ""},
+		{"no token", []*http.Cookie{{Name: "acw_tc", Value: "x"}}, ""},
+		{"nil cookie", []*http.Cookie{nil}, ""},
+		{"found", []*http.Cookie{{Name: "acw_tc", Value: "x"}, {Name: "token", Value: "abc"}}, "abc"},
+		{"blank value", []*http.Cookie{{Name: "token", Value: ""}}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := TokenFromCookies(tt.cookies); got != tt.want {
+				t.Fatalf("TokenFromCookies() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
 
 func TestInsert(t *testing.T) {
 	err := AddUser(&User{
