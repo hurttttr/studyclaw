@@ -19,6 +19,12 @@ COPY conf/QuestionBank.db /opt/QuestionBank.db
 # 二進位檔案由 workflow 預先複製到根目錄
 COPY studyclaw /opt/studyclaw
 
+# Playwright driver 1.42.1 and Chromium are preinstalled in the upstream image.
+# The azureedge.net CDN used by playwright-go's runtime installer now returns
+# 404, so installing them on startup fails and the study modules panic with a
+# nil pointer. Copying them at build time avoids that download entirely.
+# BuildKit resolves --from to the matching target platform (amd64 / arm64).
+COPY --from=ghcr.io/legolasljl/studyclaw:latest /opt/tools /opt/tools
 
 RUN  chmod -R 777 /opt/studyclaw && \
      cd /opt/ && \
